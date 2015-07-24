@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
-
 def terminal_print(matrix_layout):
     """
-    Prints a 'matrix' of 'text' using ascii symblsacters.
+    Prints a 'matrix' of 'text' using ascii symbols.
     :@param matrix_layout: a matrix of floats from [0, 1]
     """
     for indx, mat in enumerate(matrix_layout):
