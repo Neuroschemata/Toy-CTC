@@ -94,7 +94,6 @@ class CTCScheme():
             outputs_info=[rectified_log(local_ident)]
         )
 
-        # TODO: Add -2 if n > 1 and blank at end
         log_labels_probab = log_probs[-1, -1]
         self.cost = -log_labels_probab
         self.debug = TT.exp(log_probs.T)
