@@ -61,7 +61,7 @@ class CTCScheme():
         predictions = self.inpt[:, self.labels]
 
         label_probab, _ = theano.scan(
-            lambda on_tap, history: b4prev * TT.dot(label_probab, ctc_recursion),
+            lambda on_tap, history: on_tap * TT.dot(history, ctc_recursion),
             sequences=[predictions],
             outputs_info=[TT.eye(self.n)[0]]
         )
