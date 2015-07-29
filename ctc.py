@@ -60,15 +60,15 @@ class CTCScheme():
 
         softmax_outputs = self.inpt[:, self.labels]
 
-        betas, _ = theano.scan(
-            lambda outPuts, old_beta: outPuts * TT.dot(old_beta, capLambda),
+        alphas, _ = theano.scan(
+            lambda outPuts, old_alpha: outPuts * TT.dot(old_alpha, capLambda),
             sequences=[softmax_outputs],
             outputs_info=[TT.eye(self.n)[0]]
         )
 
-        labels_probab = TT.sum(betas[-1, -2:])
+        labels_probab = TT.sum(alphas[-1, -2:])
         self.cost = -TT.log(labels_probab)
-        self.debug = probabilities.T
+        self.debug = alphas.T
 
     def log_scale_ctc(self, ):
         local_ident = TT.eye(self.n)[0]
@@ -82,11 +82,11 @@ class CTCScheme():
         b4prev = TT.arange(-2, self.n-2)
         log_softmax_outputs = TT.log(self.inpt[:, self.labels])
 
-        def step(outPuts, old_beta):
+        def step(outPuts, old_alpha):
             return log_exp_sum(outPuts,
-                          rectified_log_sum(old_beta,
-                                 log_exp_sum(prev_mask, old_beta[prev]),
-                                 log_exp_sum(b4prev_mask, old_beta[b4prev])))
+                          rectified_log_sum(old_alpha,
+                                 log_exp_sum(prev_mask, old_alpha[prev]),
+                                 log_exp_sum(b4prev_mask, old_alpha[b4prev])))
 
         log_probs, _ = theano.scan(
             step,
