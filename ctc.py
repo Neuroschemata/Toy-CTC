@@ -66,8 +66,8 @@ class CTCScheme():
             outputs_info=[TT.eye(self.n)[0]]
         )
 
-        labels_probab = TT.sum(alphas[-1, -2:])
-        self.cost = -TT.log(labels_probab)
+        transcript_prob = TT.sum(alphas[-1, -2:])
+        self.cost = -TT.log(transcript_prob)
         self.debug = alphas.T
 
     def log_scale_ctc(self, ):
@@ -94,6 +94,6 @@ class CTCScheme():
             outputs_info=[rectified_log(local_ident)]
         )
 
-        log_labels_probab = log_probs[-1, -1]
-        self.cost = -log_labels_probab
+        log_transcript_prob = log_probs[-1, -1]
+        self.cost = -log_transcript_prob
         self.debug = TT.exp(log_probs.T)
