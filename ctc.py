@@ -50,23 +50,23 @@ class CTCScheme():
 
     def vanilla_ctc(self, ):
         my_labels = TT.concatenate((self.labels, [self.blank, self.blank]))
-        place_diag = TT.neq(my_labels[:-2], my_labels[2:]) * \
+        pre_V = TT.neq(my_labels[:-2], my_labels[2:]) * \
                    TT.eq(my_labels[1:-1], self.blank)
 
-        ctc_recursion = \
+        capLambda = \
             TT.eye(self.n) + \
             TT.eye(self.n, k=1) + \
-            TT.eye(self.n, k=2) * place_diag.dimshuffle((0, 'x'))
+            TT.eye(self.n, k=2) * pre_V.dimshuffle((0, 'x'))
 
-        predictions = self.inpt[:, self.labels]
+        softmax_outputs = self.inpt[:, self.labels]
 
-        label_probab, _ = theano.scan(
-            lambda on_tap, history: on_tap * TT.dot(history, ctc_recursion),
-            sequences=[predictions],
+        betas, _ = theano.scan(
+            lambda outPuts, old_beta: outPuts * TT.dot(old_beta, capLambda),
+            sequences=[softmax_outputs],
             outputs_info=[TT.eye(self.n)[0]]
         )
 
-        labels_probab = TT.sum(label_probab[-1, -2:])
+        labels_probab = TT.sum(betas[-1, -2:])
         self.cost = -TT.log(labels_probab)
         self.debug = probabilities.T
 
@@ -80,17 +80,17 @@ class CTCScheme():
         b4prev_mask = rectified_log(b4prev_mask)
         prev = TT.arange(-1, self.n-1)
         b4prev = TT.arange(-2, self.n-2)
-        log_predictions = TT.log(self.inpt[:, self.labels])
+        log_softmax_outputs = TT.log(self.inpt[:, self.labels])
 
-        def step(on_tap, history):
-            return log_exp_sum(on_tap,
-                          rectified_log_sum(history,
-                                 log_exp_sum(prev_mask, history[prev]),
-                                 log_exp_sum(b4prev_mask, history[b4prev])))
+        def step(outPuts, old_beta):
+            return log_exp_sum(outPuts,
+                          rectified_log_sum(old_beta,
+                                 log_exp_sum(prev_mask, old_beta[prev]),
+                                 log_exp_sum(b4prev_mask, old_beta[b4prev])))
 
         log_probs, _ = theano.scan(
             step,
-            sequences=[log_predictions],
+            sequences=[log_softmax_outputs],
             outputs_info=[rectified_log(local_ident)]
         )
 
