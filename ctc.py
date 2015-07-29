@@ -66,6 +66,17 @@ class CTCScheme():
             outputs_info=[TT.eye(self.n)[0]]
         )
 
+        # TODO: This is what we really should use for the initialization. 
+        # Need to debug and make sure there are no errors.
+        # initial_alphas = TT.zeros(n)
+        # initial_alphas[0]=inpt[0][-1]
+        # initial_alphas[1]=inpt[0][labels[0]]
+        # alphas, _ = theano.scan(
+        #     lambda outPuts, old_alpha: outPuts * TT.dot(old_alpha, capLambda),
+        #     sequences=[softmax_outputs],
+        #     outputs_info=[initial_alphas]
+        # )
+
         transcript_prob = TT.sum(alphas[-1, -2:])
         self.cost = -TT.log(transcript_prob)
         self.debug = alphas.T
